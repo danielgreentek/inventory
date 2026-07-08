@@ -28,6 +28,8 @@ export default function InventoryDetailPage() {
   const [editingUnitHistory, setEditingUnitHistory] = useState<string | null>(null);
   const [addUnitCount, setAddUnitCount] = useState(1);
   const [showAddUnitForm, setShowAddUnitForm] = useState(false);
+  const [unitHistoryForm, setUnitHistoryForm] = useState<Record<string, { date: string; action: string; note: string }>>({});
+  const [lastActions, setLastActions] = useState<Record<string, { prevStatus: InventoryStatus; recordId: string } | undefined>>({});
 
   useEffect(() => {
     if (item) {
@@ -68,6 +70,51 @@ export default function InventoryDetailPage() {
     setUnits(next);
     if (item) updateItem({ ...item, units: next, quantity: next.length });
     setToastMessage(`Aksi '${action}' diterapkan pada unit ${serial}.`);
+  };
+
+  const handleUnitChange = (serial: string, field: string, value: string) => {
+    setUnits((current) => {
+      const next = current.map((unit) => (unit.serial === serial ? { ...unit, [field]: value } : unit));
+      if (item) updateItem({ ...item, units: next, quantity: next.length });
+      return next;
+    });
+  };
+
+  const handleAddHistoryFor = (serial: string) => {
+    const form = unitHistoryForm[serial] ?? { date: '', action: 'Diperiksa', note: '' };
+    if (!form.date || !form.note.trim()) {
+      setToastMessage('Tanggal, aksi, dan catatan history harus diisi terlebih dahulu.');
+      return;
+    }
+    const newRecord = { id: `hist-${Date.now()}`, date: form.date, action: form.action || 'Diperiksa', note: form.note.trim() };
+    const prevStatus = units.find((u) => u.serial === serial)?.status ?? 'Aktif';
+    const { status, condition_note } = computeStatusAndNote(newRecord.action);
+    setUnits((current) => {
+      const next = current.map((u) =>
+        u.serial === serial ? { ...u, history: [...(u.history ?? []), newRecord], status, condition_note } : u
+      );
+      if (item) updateItem({ ...item, units: next, quantity: next.length });
+      return next;
+    });
+    setLastActions((prev) => ({ ...prev, [serial]: { prevStatus, recordId: newRecord.id } }));
+    setUnitHistoryForm((prev) => ({ ...prev, [serial]: { date: '', action: 'Diperiksa', note: '' } }));
+    setToastMessage('Riwayat unit berhasil ditambahkan.');
+  };
+
+  const undoUnitAction = (serial: string) => {
+    const entry = lastActions[serial];
+    if (!entry) { setToastMessage('Tidak ada aksi terakhir untuk dibatalkan pada unit ini.'); return; }
+    setUnits((current) => {
+      const next = current.map((u) => {
+        if (u.serial !== serial) return u;
+        const filtered = (u.history ?? []).filter((r) => r.id !== entry.recordId);
+        return { ...u, history: filtered, status: entry.prevStatus };
+      });
+      if (item) updateItem({ ...item, units: next, quantity: next.length });
+      return next;
+    });
+    setLastActions((prev) => { const copy = { ...prev }; delete copy[serial]; return copy; });
+    setToastMessage(`Aksi terakhir pada unit ${serial} dibatalkan.`);
   };
 
   const handleSave = async (e: FormEvent) => {
@@ -242,6 +289,69 @@ export default function InventoryDetailPage() {
                   </div>
                 </div>
               )}
+
+              {/* Tambah Riwayat */}
+              <div className="mt-4 border-t pt-4">
+                <p className="text-sm font-semibold text-slate-700">Tambah Riwayat</p>
+                <div className="mt-3 grid gap-3">
+                  <div className="grid grid-cols-2 gap-3">
+                    <input
+                      type="date"
+                      value={unitHistoryForm[unit.serial]?.date || ''}
+                      onChange={(e) =>
+                        setUnitHistoryForm((prev) => ({
+                          ...prev,
+                          [unit.serial]: { ...(prev[unit.serial] ?? { action: 'Diperiksa', note: '' }), date: e.target.value }
+                        }))}
+                      className="w-full rounded-3xl border border-slate-200 bg-white px-4 py-2 text-sm outline-none"
+                    />
+                    <select
+                      value={unitHistoryForm[unit.serial]?.action || 'Diperiksa'}
+                      onChange={(e) =>
+                        setUnitHistoryForm((prev) => ({
+                          ...prev,
+                          [unit.serial]: { ...(prev[unit.serial] ?? { date: '', note: '' }), action: e.target.value }
+                        }))}
+                      className="w-full rounded-3xl border border-slate-200 bg-white px-4 py-2 text-sm outline-none"
+                    >
+                      <option value="Diperiksa">Diperiksa</option>
+                      <option value="Diperbaiki">Diperbaiki</option>
+                      <option value="Dikonfirmasi">Dikonfirmasi</option>
+                      <option value="Maintenance">Maintenance</option>
+                      <option value="Lainnya">Lainnya</option>
+                    </select>
+                  </div>
+                  <textarea
+                    rows={2}
+                    value={unitHistoryForm[unit.serial]?.note || ''}
+                    onChange={(e) =>
+                      setUnitHistoryForm((prev) => ({
+                        ...prev,
+                        [unit.serial]: { ...(prev[unit.serial] ?? { date: '', action: 'Diperiksa' }), note: e.target.value }
+                      }))}
+                    placeholder="Catatan singkat..."
+                    className="w-full rounded-3xl border border-slate-200 bg-white px-4 py-2 text-sm outline-none"
+                  />
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={() => handleAddHistoryFor(unit.serial)}
+                      className="rounded-3xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-800"
+                    >
+                      Tambah History
+                    </button>
+                    {lastActions[unit.serial] && (
+                      <button
+                        type="button"
+                        onClick={() => undoUnitAction(unit.serial)}
+                        className="rounded-3xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-600 transition hover:bg-slate-100"
+                      >
+                        Urungkan
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
             </div>
           ))}
         </div>
