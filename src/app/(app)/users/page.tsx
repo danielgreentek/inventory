@@ -21,7 +21,7 @@ export default function UsersPage() {
     const loadUsers = async () => {
       setIsLoadingUsers(true);
       try {
-        const data = await api.get<any[]>('/users');
+        const data = await api.get<any[]>('/api/users');
         setUsers(data as UserRecord[]);
       } catch { setToastMessage('Gagal memuat data pengguna.'); }
       setIsLoadingUsers(false);

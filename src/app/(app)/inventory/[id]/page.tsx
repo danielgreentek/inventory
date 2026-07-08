@@ -204,6 +204,30 @@ export default function InventoryDetailPage() {
                     if (item) updateItem({ ...item, units: next, quantity: next.length });
                   }} className="mt-1 w-full rounded-3xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none" />
                 </div>
+                <div>
+                  <label className="text-xs font-semibold text-slate-500">Kondisi</label>
+                  <input value={unit.condition || ''} onChange={(e) => {
+                    const next = units.map((u) => u.serial === unit.serial ? { ...u, condition: e.target.value } : u);
+                    setUnits(next);
+                    if (item) updateItem({ ...item, units: next, quantity: next.length });
+                  }} className="mt-1 w-full rounded-3xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none" />
+                </div>
+                <div>
+                  <label className="text-xs font-semibold text-slate-500">Catatan kondisi</label>
+                  <input value={unit.condition_note || ''} onChange={(e) => {
+                    const next = units.map((u) => u.serial === unit.serial ? { ...u, condition_note: e.target.value } : u);
+                    setUnits(next);
+                    if (item) updateItem({ ...item, units: next, quantity: next.length });
+                  }} className="mt-1 w-full rounded-3xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none" placeholder="Catatan kondisi..." />
+                </div>
+                <div>
+                  <label className="text-xs font-semibold text-slate-500">Tanggal produksi</label>
+                  <input type="date" value={unit.production_date || ''} onChange={(e) => {
+                    const next = units.map((u) => u.serial === unit.serial ? { ...u, production_date: e.target.value } : u);
+                    setUnits(next);
+                    if (item) updateItem({ ...item, units: next, quantity: next.length });
+                  }} className="mt-1 w-full rounded-3xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none" />
+                </div>
               </div>
               {unit.history && unit.history.length > 0 && (
                 <div className="mt-4 rounded-3xl border border-slate-200 bg-white p-4">
