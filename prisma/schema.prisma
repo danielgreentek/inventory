@@ -1,0 +1,72 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id               String   @id @default(uuid())
+  name             String   @default("")
+  email            String   @unique
+  password         String
+  role             String   @default("staff")
+  department       String   @default("Umum")
+  emailVerifiedAt  DateTime?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  inventories      Inventory[]
+  passwordResetToken String?
+  passwordResetExpires DateTime?
+
+  @@map("users")
+}
+
+model Inventory {
+  id           String   @id
+  itemCode     String   @map("item_code")
+  itemName     String   @map("item_name")
+  category     String
+  brand        String
+  branch       String
+  price        Int?
+  stock        Int      @default(0)
+  purchaseDate DateTime @map("purchase_date")
+  imageUrl     String?  @map("image_url")
+  units        Json?
+  history      Json?
+  createdBy    String?  @map("created_by")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  creator      User?    @relation(fields: [createdBy], references: [id], onDelete: SetNull)
+  borrowings   Borrowing[]
+
+  @@map("inventories")
+}
+
+model Borrowing {
+  id           String   @id
+  inventoryId  String   @map("inventory_id")
+  borrower     String
+  borrowDate   DateTime @map("borrow_date")
+  returnDate   DateTime? @map("return_date")
+  status       String   @default("Dipinjam")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  inventory    Inventory @relation(fields: [inventoryId], references: [id], onDelete: Cascade)
+
+  @@map("borrowings")
+}
+
+model PasswordResetToken {
+  id        String   @id @default(uuid())
+  email     String
+  token     String
+  expiresAt DateTime @map("expires_at")
+  createdAt DateTime @default(now())
+
+  @@map("password_reset_tokens")
+}
