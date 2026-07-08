@@ -16,7 +16,7 @@ function EmailSentContent() {
     if (!email) return;
     setResending(true);
     try {
-      await api.post('/email/resend', { email });
+      await api.post('/api/email/resend', { email });
       setResent(true);
     } catch {
       // silent

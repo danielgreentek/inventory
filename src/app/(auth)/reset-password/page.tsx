@@ -25,7 +25,7 @@ function ResetPasswordContent() {
     setIsSubmitting(true);
 
     try {
-      await api.post('/reset-password', { token, email, password, password_confirmation: passwordConfirmation });
+      await api.post('/api/reset-password', { token, email, password, password_confirmation: passwordConfirmation });
       setSuccess('Password berhasil direset! Silakan login dengan password baru.');
       setTimeout(() => router.push('/login'), 3000);
     } catch (err: any) {

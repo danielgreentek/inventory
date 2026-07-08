@@ -34,7 +34,7 @@ export default function RegisterPage() {
     }
 
     try {
-      await api.post<{ message: string; email: string }>('/register', { name, email, password });
+      await api.post<{ message: string; email: string }>('/api/register', { name, email, password });
       router.push(`/email-sent?email=${encodeURIComponent(email)}`);
     } catch (err: any) {
       setError(err.message || 'Gagal mendaftar.');

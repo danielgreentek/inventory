@@ -38,11 +38,11 @@ export default function UsersPage() {
     if (!formData.email || !formData.password) { setToastMessage('Email dan password harus diisi.'); return; }
     setIsSaving(true);
     try {
-      await api.post('/register', { name: formData.name || formData.email?.split('@')[0], email: formData.email, password: formData.password, department: formData.department || 'Umum' });
+      await api.post('/api/register', { name: formData.name || formData.email?.split('@')[0], email: formData.email, password: formData.password, department: formData.department || 'Umum' });
       setToastMessage('Pengguna berhasil ditambahkan.');
       setShowAddModal(false);
       setFormData({});
-      const data = await api.get<any[]>('/users');
+      const data = await api.get<any[]>('/api/users');
       setUsers(data as UserRecord[]);
     } catch (err: any) { setToastMessage(err.message || 'Gagal menambahkan pengguna.'); }
     finally { setIsSaving(false); }
@@ -52,7 +52,7 @@ export default function UsersPage() {
     if (!selectedUser) return;
     setIsSaving(true);
     try {
-      if (formData.role) await api.put(`/users/${selectedUser.id}/role`, { role: formData.role });
+      if (formData.role) await api.put(`/api/users/${selectedUser.id}/role`, { role: formData.role });
       setToastMessage('Role berhasil diperbarui.');
       setShowEditModal(false);
       setSelectedUser(null);
@@ -108,7 +108,7 @@ export default function UsersPage() {
                         className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100" title="Ubah Role"><Edit3 size={16} /></button>
                       <button onClick={async () => {
                         if (!confirm(`Hapus pengguna "${user.name}"?`)) return;
-                        try { await api.delete(`/users/${user.id}`); setToastMessage('Pengguna dihapus.'); const d = await api.get<any[]>('/users'); setUsers(d as UserRecord[]); }
+                        try { await api.delete(`/api/users/${user.id}`); setToastMessage('Pengguna dihapus.'); const d = await api.get<any[]>('/api/users'); setUsers(d as UserRecord[]); }
                         catch (err: any) { setToastMessage(err.message); }
                       }} className="rounded-lg p-1.5 text-rose-400 hover:bg-rose-50" title="Hapus"><Trash2 size={16} /></button>
                     </div>

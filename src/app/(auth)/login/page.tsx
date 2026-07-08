@@ -55,7 +55,7 @@ export default function LoginPage() {
   const handleResend = async () => {
     setResending(true);
     try {
-      await api.post('/email/resend', { email });
+      await api.post('/api/email/resend', { email });
       setResent(true);
     } catch {
       setError('Gagal mengirim ulang email verifikasi.');

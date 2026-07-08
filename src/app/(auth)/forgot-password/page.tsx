@@ -18,7 +18,7 @@ export default function ForgotPasswordPage() {
     setIsSubmitting(true);
 
     try {
-      await api.post('/forgot-password', { email });
+      await api.post('/api/forgot-password', { email });
       setSuccess('Tautan reset password telah dikirim ke email Anda.');
     } catch (err: any) {
       setError(err.message || 'Gagal mengirim email reset password.');
