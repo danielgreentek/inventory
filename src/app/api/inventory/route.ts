@@ -2,7 +2,7 @@ import crypto from 'crypto';
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getAuthUser } from '@/lib/auth';
-import { Prisma } from '@prisma/client';
+
 
 export async function GET(request: NextRequest) {
   const user = await getAuthUser(request);
